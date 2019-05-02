@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
+<web-app>
+	<session-config>
+		<session-timeout>15</session-timeout>
+	</session-config>
+
+	<display-name>HSE Minimal Application</display-name>
+	<description>Hibernate, Struts, Echo2 Minimal Application</description>
+
+
+	<!-- Uncomment this to use a JNDI data source
+    <resource-ref>
+        <description>Minimal DB Connection</description>
+        <res-ref-name>jdbc/minimalDB</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
+	-->
+
+
+	<!-- Hibernate support -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<filter>
+		<filter-name>hibernateFilter</filter-name>
+		<filter-class>org.springframework.orm.hibernate3.support.OpenSessionInViewFilter</filter-class>
+		<init-param> 
+            <param-name>sessionFactoryBeanName</param-name> 
+            <param-value>minimalSessionFactory</param-value> 
+        </init-param> 
+	</filter>
+	<filter-mapping>
+		<filter-name>hibernateFilter</filter-name>
+		<url-pattern>/app</url-pattern>
+	</filter-mapping>
+
+
+	<!-- Configuration locations, which decide where Spring will get its beans from.
+	     Note: Files loaded later will override previous beans with the same name.
+    -->
+	<context-param>
+	    <param-name>contextConfigLocation</param-name>
+    	<param-value>
+    	  classpath*:/org/stenerud/hse/base/baseContext.xml
+    	  classpath*:/org/stenerud/hse/minimal/springContext.xml
+    	</param-value>
+	</context-param>
+
+
+	<!-- Main Application servlet -->
+	<servlet>
+		<servlet-name>MainApplicationServlet</servlet-name>
+		<servlet-class>org.stenerud.hse.base.ui.servlet.Echo2Servlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>MainApplicationServlet</servlet-name>
+		<url-pattern>/app</url-pattern>
+	</servlet-mapping>
+
+
+	<!-- End Session servlet -->
+	<servlet>
+		<servlet-name>EndSessionServlet</servlet-name>
+		<servlet-class>org.stenerud.hse.base.ui.servlet.EndSessionServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>EndSessionServlet</servlet-name>
+		<url-pattern>/endSession</url-pattern>
+	</servlet-mapping>
+</web-app>

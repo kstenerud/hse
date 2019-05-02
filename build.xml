@@ -1,60 +1,27 @@
 <?xml version="1.0"?>
 
-<project default="war" basedir="."        name="hse">
-  <!-- Project Values -->
-  <property name="project.package"         value="org.stenerud.hse"/>
-  <property name="project.version"         value="1.1"/>
-  <property name="project.year"            value="2006"/>
-
-  <property name="project.jar"             value="webapp/WEB-INF/lib/${ant.project.name}-${project.version}.jar"/>
-  <property name="project.sql"             value="${ant.project.name}.sql"/>
-  <property name="project.war"             value="${ant.project.name}.war"/>
-
-  <property name="themes.jar"              value="webapp/WEB-INF/lib/${ant.project.name}-themes.jar"/>
-
-  <!-- Override file -->
-  <property file="build.properties"/>
-
-  <!-- Javac Properties -->
-  <property name="javac.debug"             value="true"/>
-  <property name="javac.optimize"          value="false"/>
+<project default="make"                    name="hse">
 
   <!-- Directories -->
+  <property name="dir.dist"                location="dist"/>
+  <property name="dir.base"                location="base"/>
   <property name="dir.themes"              location="themes"/>
-  <property name="dir.webapp"              location="webapp"/>
-  <property name="dir.lib"                 location="webapp/WEB-INF/lib"/>
-  <property name="dir.javadoc"             location="doc/javadoc"/>
+  <property name="dir.standardsecurity"    location="standardsecurity"/>
+  <property name="dir.example"             location="example"/>
+  <property name="dir.minimal"             location="minimal"/>
 
-  <!-- source files used in building the project -->
-  <property name="dir.src"                 location="src"/>
-
-  <!-- temporary work directory used when building the project -->
-  <property name="dir.work"                location="work"/>
-  <property name="dir.work.class"          location="work/class"/>
-
-
-
-  <!-- =================================================================== -->
-  <!-- Classpaths                                                          -->
-  <!-- =================================================================== -->
-  <path id="classpath.default">
-    <fileset dir="${dir.lib}" >
-      <include name="**/*.jar"/>
-    </fileset>
-    <pathelement path="${dir.src}"/>
-  </path>
-
-  <path id="classpath.hibernate">
-    <path refid="classpath.default"/>
-    <pathelement location="${dir.work.class}"/>
-    <pathelement location="webapp/WEB-INF/classes"/>
-  </path>
 
 
   <!-- =================================================================== -->
   <!-- Build                                                               -->
   <!-- =================================================================== -->
-  <target name="make" depends="compile,jarfile" description="Build the project"/>
+  <target name="make" description="Build the project">
+    <ant dir="${dir.base}" target="make"/>
+    <ant dir="${dir.standardsecurity}" target="make"/>
+    <ant dir="${dir.themes}" target="make"/>
+    <ant dir="${dir.example}" target="make"/>
+    <ant dir="${dir.minimal}" target="make"/>
+  </target>
 
 
 
@@ -69,62 +36,12 @@
   <!-- Clean everything                                                    -->
   <!-- =================================================================== -->
   <target name="clean" description="Clean out all compiled/generated files">
-    <delete dir="${dir.work}"/>
-    <delete dir="${dir.javadoc}"/>
-    <delete file="${project.jar}"/>
-    <delete file="${project.sql}"/>
-    <delete file="${project.war}"/>
-    <delete file="${themes.jar}"/>
-  </target>
-
-
-
-  <!-- =================================================================== -->
-  <!-- Initialize the project directory structure                          -->
-  <!-- =================================================================== -->
-  <target name="init" description="Initialize the project directory structure">
-  	<mkdir dir="${dir.work.class}"/>
-  </target>
-
-
-
-  <!-- =================================================================== -->
-  <!-- Compile java                                                        -->
-  <!-- =================================================================== -->
-  <target name="compile" depends="init" description="Compile java">
-    <javac
-     destdir="${dir.work.class}"
-     classpathref="classpath.default"
-     verbose="false"
-     debug="${javac.debug}"
-     optimize="${javac.optimize}">
-      <src>
-        <pathelement location="${dir.src}"/>
-      </src>
-    </javac>
-  </target>
-
-
-
-  <!-- =================================================================== -->
-  <!-- Create jar                                                          -->
-  <!-- =================================================================== -->
-  <target name="jarfile" depends="compile" description="Create jarfile">
-    <jar jarfile="${project.jar}">
-      <fileset dir="${dir.work.class}" excludes="**/*.java"/>
-      <fileset dir="${dir.src}" excludes="**/*.java"/>
-    </jar>
-  </target>
-
-
-
-  <!-- =================================================================== -->
-  <!-- Themes jar                                                          -->
-  <!-- =================================================================== -->
-  <target name="themesjar" description="Create themes jarfile">
-    <jar jarfile="${themes.jar}">
-      <fileset dir="${dir.themes}"/>
-    </jar>
+    <ant dir="${dir.base}" target="clean"/>
+    <ant dir="${dir.standardsecurity}" target="clean"/>
+    <ant dir="${dir.themes}" target="clean"/>
+    <ant dir="${dir.example}" target="clean"/>
+    <ant dir="${dir.minimal}" target="clean"/>
+    <delete dir="${dir.dist}"/>
   </target>
 
 
@@ -132,50 +49,19 @@
   <!-- =================================================================== -->
   <!-- Generate Javadoc                                                    -->
   <!-- =================================================================== -->
-  <target name="javadoc" depends="init" description="Generate Javadoc">
-    <javadoc
-      sourcepath="${dir.src}"
-      destdir="${dir.javadoc}"
-      packagenames="${project.package}.*"
-      classpathref="classpath.default"
-      defaultexcludes="true"
-    />
+  <target name="javadoc" depends="make" description="Generate Javadoc">
+    <ant dir="${dir.base}" target="javadoc"/>
+    <ant dir="${dir.standardsecurity}" target="javadoc"/>
+    <ant dir="${dir.example}" target="javadoc"/>
+    <ant dir="${dir.minimal}" target="javadoc"/>
   </target>
 
 
 
   <!-- =================================================================== -->
-  <!-- Create the database schema                                          -->
+  <!-- Create the database schema for the example webapp                   -->
   <!-- =================================================================== -->
-  <target name="createschema" depends="compile"
-    description="Generate DDL from hibernate mapping files">
-    <taskdef name="exportschema"
-      classname="org.hibernate.tool.hbm2ddl.SchemaExportTask"
-      classpathref="classpath.hibernate"/>
-    <exportschema
-      quiet="yes"
-      text="yes"
-      delimiter=";"
-      output="${project.sql}">
-      <fileset dir="${dir.src}">
-        <include name="**/*.hbm.xml"/>
-      </fileset>
-    </exportschema>
+  <target name="createschema" depends="make" description="Generate example webapp schema">
+    <ant dir="${dir.example}" target="createschema"/>
   </target>
-
-
-
-  <!-- =================================================================== -->
-  <!-- Create warfile                                                      -->
-  <!-- =================================================================== -->
-  <target name="war" depends="compile,jarfile,themesjar" description="Create warfile (default)">
-    <jar jarfile="${project.war}">
-      <fileset dir="${dir.webapp}"/>
-    <manifest>
-      <attribute name="Implementation-Title" value="Echo2, Hibernate, Struts Base Application"/>
-      <attribute name="Implementation-Version" value="${project.version}"/>
-    </manifest>
-    </jar>
-  </target>
-
 </project>

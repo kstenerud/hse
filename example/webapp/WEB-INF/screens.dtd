@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<!ELEMENT accessible EMPTY >
+<!ATTLIST accessible value NMTOKEN #REQUIRED >
+
+<!ELEMENT accessible-method ( parameter* ) >
+<!ATTLIST accessible-method bean NMTOKEN #REQUIRED >
+<!ATTLIST accessible-method match CDATA #IMPLIED >
+<!ATTLIST accessible-method method NMTOKEN #REQUIRED >
+
+<!ELEMENT accessible-property EMPTY >
+<!ATTLIST accessible-property bean NMTOKEN #REQUIRED >
+<!ATTLIST accessible-property match NMTOKEN #IMPLIED >
+<!ATTLIST accessible-property property NMTOKEN #REQUIRED >
+
+<!ELEMENT category ( accessible | accessible-method | accessible-property | category | screen )* >
+<!ATTLIST category message NMTOKEN #REQUIRED >
+
+<!ELEMENT initial-screen EMPTY >
+<!ATTLIST initial-screen bean NMTOKEN #REQUIRED >
+
+<!ELEMENT main-screen EMPTY >
+<!ATTLIST main-screen bean NMTOKEN #REQUIRED >
+
+<!ELEMENT parameter EMPTY >
+<!ATTLIST parameter value CDATA #REQUIRED >
+
+<!ELEMENT screen ( accessible | accessible-method | accessible-property )* >
+<!ATTLIST screen bean NMTOKEN #REQUIRED >
+<!ATTLIST screen message NMTOKEN #REQUIRED >
+
+<!ELEMENT screens ( category | initial-screen | main-screen | screen )* >

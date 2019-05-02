@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+
+<project default="make"                    name="hse-themes">
+  <!-- Project Values -->
+  <property name="project.version"         value="2.0b2"/>
+  <property name="project.year"            value="2006"/>
+
+  <!-- Override file -->
+  <property file="build.properties"/>
+
+  <!-- Javac Properties -->
+  <property name="javac.debug"             value="true"/>
+  <property name="javac.optimize"          value="false"/>
+
+  <!-- Directories -->
+  <property name="dir.dist"                location="../dist"/>
+  <property name="dir.redmondx"            location="RedmondX"/>
+
+  <!-- temporary work directory used when building the project -->
+  <property name="project.jar"             value="${dir.dist}/${ant.project.name}-${project.version}.jar"/>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Build                                                               -->
+  <!-- =================================================================== -->
+  <target name="make" depends="jarfile" description="Build the project (default)"/>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Rebuild                                                             -->
+  <!-- =================================================================== -->
+  <target name="rebuild" depends="clean,make" description="Clean, then rebuild the project"/>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Clean everything                                                    -->
+  <!-- =================================================================== -->
+  <target name="clean" description="Clean out all compiled/generated files">
+    <delete file="${project.jar}"/>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Create jar                                                          -->
+  <!-- =================================================================== -->
+  <target name="jarfile" description="Create jarfile">
+  	<mkdir dir="${dir.dist}"/>
+    <jar jarfile="${project.jar}">
+      <fileset dir="${dir.redmondx}"/>
+    </jar>
+  </target>
+
+</project>

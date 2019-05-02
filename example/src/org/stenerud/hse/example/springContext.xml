@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<!-- ============================================= -->
+	<!-- ================== Database ================= -->
+	<!-- ============================================= -->
+
+	<!-- Data Source -->
+
+	<!-- Select one of the following data sources -->
+
+	<!-- Use this for a JNDI data source. You must also uncomment in context.xml and web.xml.
+    <bean id="exampleDataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName"><value>java:comp/env/jdbc/exampleDB</value></property>
+    </bean>
+    -->
+
+	<!-- Use this for an application-supplied dbcp pooled data source
+    <bean id="exampleDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName"><value>${example.database.driverClassName}</value></property>
+        <property name="url"><value>${example.database.url}</value></property>
+        <property name="username"><value>${example.database.username}</value></property>
+        <property name="password"><value>${example.database.password}</value></property>
+	</bean>
+	-->
+
+	<!-- Use this for an application-supplied c3p0 pooled data source -->
+	<bean id="exampleDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${example.database.driverClassName}" />
+		<property name="jdbcUrl" value="${example.database.url}" />
+		<property name="user" value="${example.database.username}" />
+		<property name="password" value="${example.database.password}" />
+		<property name="preferredTestQuery" value="${example.database.testQuery}" />
+		<property name="acquireRetryAttempts" value="5" />
+		<property name="acquireRetryDelay" value="1000" />
+		<property name="checkoutTimeout" value="10000" />
+		<property name="maxPoolSize" value="30" />
+		<property name="idleConnectionTestPeriod" value="60" />
+		<property name="testConnectionOnCheckin" value="true" />
+		<property name="testConnectionOnCheckout" value="false" />
+	</bean>
+
+	<!-- Hibernate -->
+	<bean id="exampleSessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource"><ref bean="exampleDataSource"/></property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${example.hibernate.dialect}</prop>
+				<prop key="hibernate.query.substitutions">${example.database.substitutions}</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">false</prop>
+			</props>
+		</property>
+		<property name="mappingResources">
+			<list/>
+		</property>
+	</bean>
+
+	<bean id="exampleDisconnectHandlerFactory" class="org.stenerud.hse.base.data.DisconnectHandlerFactory">
+	  <property name="handlerClassName" value="${example.database.disconnectHandlerClassName}"/>
+	</bean>
+
+    <!-- Hibernate configurations we are interested in -->
+    <bean class="org.stenerud.hse.base.data.HibernateConfigurationInterest">
+        <property name="sessionFactory"><ref bean="exampleSessionFactory"/></property>
+        <property name="disconnectHandlerFactory"><ref bean="exampleDisconnectHandlerFactory"/></property>
+		<property name="configurationMatchers">
+			<list>
+				<value>.*</value>
+			</list>
+		</property>
+    </bean>
+    
+
+	<bean id="exampleMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename">
+			<value>Messages</value> <!-- Messages.properties at the top of the classpath -->
+		</property>
+	</bean>	
+
+	<bean id="exampleUserInterface" class="org.stenerud.hse.example.ui.echo2.ExampleUserInterface" singleton="false">
+		<property name="messages"><ref bean="messages"/></property>
+		<property name="properties"><ref bean="applicationProperties"/></property>
+		<property name="security"><ref bean="security"/></property>
+		<property name="screenManager"><ref bean="screenManager"/></property>
+	</bean>
+</beans>

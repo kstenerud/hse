@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+
+<project default="make"                    name="hse-standardsecurity">
+  <!-- Project Values -->
+  <property name="project.package"         value="org.stenerud.hse.standardsecurity"/>
+  <property name="project.version"         value="2.0b2"/>
+  <property name="project.year"            value="2006"/>
+
+  <!-- Override file -->
+  <property file="build.properties"/>
+
+  <!-- Javac Properties -->
+  <property name="javac.debug"             value="true"/>
+  <property name="javac.optimize"          value="false"/>
+
+  <!-- Directories -->
+  <property name="dir.buildlib"            location="../buildlib"/>
+  <property name="dir.baselib"             location="../lib"/>
+  <property name="dir.dist"                location="../dist"/>
+  <property name="dir.javadoc"             location="../dist/doc/api/standardsecurity"/>
+
+  <!-- source files used in building the project -->
+  <property name="dir.src"                 location="src"/>
+
+  <!-- temporary work directory used when building the project -->
+  <property name="dir.work"                location="work"/>
+  <property name="dir.work.class"          location="work/class"/>
+
+  <property name="project.jar"             value="${dir.dist}/${ant.project.name}-${project.version}.jar"/>
+  <property name="readme.local"            value="readme.txt"/>
+  <property name="readme.dist"             value="${dir.dist}/${ant.project.name}-${project.version}.readme"/>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Classpaths                                                          -->
+  <!-- =================================================================== -->
+  <path id="classpath.default">
+    <fileset dir="${dir.buildlib}" >
+      <include name="**/*.jar"/>
+    </fileset>
+    <fileset dir="${dir.baselib}" >
+      <include name="**/*.jar"/>
+    </fileset>
+    <fileset dir="${dir.dist}" >
+      <include name="hse-base*.jar"/>
+    </fileset>
+    <pathelement path="${dir.src}"/>
+  </path>
+
+  <path id="classpath.hibernate">
+    <path refid="classpath.default"/>
+    <pathelement location="${dir.work.class}"/>
+    <pathelement location="webapp/WEB-INF/classes"/>
+  </path>
+
+
+  <!-- =================================================================== -->
+  <!-- Build                                                               -->
+  <!-- =================================================================== -->
+  <target name="make" depends="compile,jarfile,copy" description="Build the project (default)"/>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Rebuild                                                             -->
+  <!-- =================================================================== -->
+  <target name="rebuild" depends="clean,make" description="Clean, then rebuild the project"/>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Clean everything                                                    -->
+  <!-- =================================================================== -->
+  <target name="clean" description="Clean out all compiled/generated files">
+    <delete dir="${dir.work}"/>
+    <delete file="${project.jar}"/>
+    <delete dir="${dir.javadoc}"/>
+    <delete file="${readme.dist}"/>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Compile java                                                        -->
+  <!-- =================================================================== -->
+  <target name="compile" description="Compile java">
+  	<mkdir dir="${dir.work.class}"/>
+    <javac
+     destdir="${dir.work.class}"
+     classpathref="classpath.default"
+     verbose="false"
+     debug="${javac.debug}"
+     optimize="${javac.optimize}">
+      <src>
+        <pathelement location="${dir.src}"/>
+      </src>
+    </javac>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Create jar                                                          -->
+  <!-- =================================================================== -->
+  <target name="jarfile" depends="compile" description="Create jarfile">
+  	<mkdir dir="${dir.dist}"/>
+    <jar jarfile="${project.jar}">
+      <fileset dir="${dir.work.class}" excludes="**/*.java"/>
+      <fileset dir="${dir.src}" excludes="**/*.java"/>
+    </jar>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Copy files                                                          -->
+  <!-- =================================================================== -->
+  <target name="copy" description="Copy any other related files to dist">
+  	<mkdir dir="${dir.dist}"/>
+    <copy file="${readme.local}" tofile="${readme.dist}"/>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Generate Javadoc                                                    -->
+  <!-- =================================================================== -->
+  <target name="javadoc" description="Generate Javadoc">
+  	<mkdir dir="${dir.javadoc}"/>
+    <javadoc
+      sourcepath="${dir.src}"
+      destdir="${dir.javadoc}"
+      packagenames="${project.package}.*"
+      classpathref="classpath.default"
+      defaultexcludes="true"
+    >
+    </javadoc>
+  </target>
+
+</project>

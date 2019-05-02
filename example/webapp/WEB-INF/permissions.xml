@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<permissions>
+  <category name="category.administration">
+    <permission name="permission.groups" access="readWrite"/>
+    <permission name="permission.users" access="readWrite"/>
+    <permission name="permission.users.all" access="readWrite"/>
+  </category>
+</permissions>

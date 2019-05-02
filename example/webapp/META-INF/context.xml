@@ -1,0 +1,19 @@
+<Context path="/hse-example" docBase="hse">
+   <!-- Turn off session saving -->
+   <Manager pathname="" />
+
+	<!-- Uncomment this to use a JNDI data source
+    <Resource
+        name="jdbc/exampleDB"
+        description="Example Data Source"
+        type="javax.sql.DataSource"
+        auth="Container"
+        driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
+        url="jdbc:derby:exampledb;create=true"
+        username="example"
+        password="example"
+        maxIdle="5"
+        maxActive="50"
+    />
+	-->
+</Context>

@@ -1,0 +1,19 @@
+<Context path="/hse-minimal" docBase="hse">
+   <!-- Turn off session saving -->
+   <Manager pathname="" />
+
+	<!-- Uncomment this to use a JNDI data source
+    <Resource
+        name="jdbc/minimalDB"
+        description="Minimal Data Source"
+        type="javax.sql.DataSource"
+        auth="Container"
+        driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
+        url="jdbc:derby:minimaldb;create=true"
+        username="minimal"
+        password="minimal"
+        maxIdle="5"
+        maxActive="50"
+    />
+	-->
+</Context>

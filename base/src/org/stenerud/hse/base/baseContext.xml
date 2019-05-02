@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<!-- ============================================== -->
+	<!-- ================== Services ================== -->
+	<!-- ============================================== -->
+
+    <!-- Provides "plugin" support for hibernate mapping file lists -->
+    <bean class="org.stenerud.hse.base.data.HibernateConfigurer"/>
+
+	<!-- Properties -->
+
+	<!-- The resource containing application.properties. -->
+	<bean id="applicationPropertiesResource" class="org.springframework.web.context.support.ServletContextResource">
+		<constructor-arg index="0">
+        	<bean class="org.springframework.web.context.support.ServletContextFactoryBean"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <value>/WEB-INF/application.properties</value>
+        </constructor-arg> 
+	</bean>
+
+    <!-- application.properties as a PropertyHelper. -->
+	<bean id="applicationProperties" class="org.stenerud.hse.base.tool.PropertyHelper">
+		<property name="resource"><ref bean="applicationPropertiesResource"/></property>
+		<property name="checkInterval" value="10000"/> <!-- 10 seconds -->
+	</bean>
+
+	<bean id="screensXmlResource" class="org.springframework.web.context.support.ServletContextResource">
+		<constructor-arg index="0">
+        	<bean class="org.springframework.web.context.support.ServletContextFactoryBean"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <value>/WEB-INF/screens.xml</value>
+        </constructor-arg> 
+	</bean>
+
+	<!-- Misc -->
+
+	<!-- Post-processor that fills in all placeholder values with properties from applicationProperties -->
+	<bean class='org.springframework.beans.factory.config.PropertyPlaceholderConfigurer'>
+		<property name="location"><ref bean="applicationPropertiesResource"/></property>
+	</bean>
+
+	<bean id="messages" class="org.stenerud.hse.base.ui.echo2.SpringEcho2Messages">
+		<property name="messageSource"><ref bean="${bean.messageSource}"/></property>
+	</bean>
+
+
+
+	<!-- ===================================================== -->
+	<!-- ================== Web Application ================== -->
+	<!-- ===================================================== -->
+
+	<bean id="webApplication" class="org.stenerud.hse.base.ui.servlet.Echo2Application" singleton="false">
+		<property name="userInterface"><ref bean="${bean.userInterface}"/></property>
+	</bean>
+
+	<bean id="screenManager" class="org.stenerud.hse.base.ui.echo2.screen.ScreenManager">
+		<property name="resource"><ref bean="screensXmlResource"/></property>
+	</bean>
+
+
+	<!-- ============================================= -->
+	<!-- ================== Screens ================== -->
+	<!-- ============================================= -->
+
+	<!-- Main Screen -->
+	<bean id="mainScreen" class="org.stenerud.hse.base.ui.echo2.screen.main.MainScreen" singleton="false">
+		<property name="messages"><ref bean="messages"/></property>
+	</bean>
+
+</beans>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="org.stenerud.hse.standardsecurity.data.security.PermissionLevel" table="HSEPermissionLevel">
+		<id column="permissionLevelId" name="id" type="int" unsaved-value="-1">
+			<generator class="native"/>
+		</id>
+		<many-to-one class="org.stenerud.hse.standardsecurity.data.security.Permission" column="permissionId" fetch="join" name="permission" not-null="true"/>
+		<property column="level" name="level" not-null="true" type="int"/>
+	</class>
+</hibernate-mapping>

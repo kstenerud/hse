@@ -1,3 +1,126 @@
+HSE 2.0b2 (2006-oct-17):
+------------------------
+Sorry for the long delay.  Things got pretty busy for me of late.
+
+HIERARCHY CHANGE:
+The old object hierarchy was getting unwieldly, so I shuffled things around a bit to clean up and make things more logical.
+I'm hoping that it won't cause too many troubles with people who are using HSE already... The hierarchy shouldn't change much anymore after this.
+
+
+SCREEN MANAGER:
+The screen manager is now the preferred way to handle screens.  It reads its definition from screens.xml.
+See example/webapp-WEB-INF/screens.xml and screens.dtd to see how they work.
+The example app implements the screen selector using a menu, with each level of category reprsented by a submenu.  See ExampleUserInterface.buildMainMenu().
+
+Categories:
+Categories represent a logical grouping of screens.  Typically, a screen selector will show a list of subobjects under a category.
+
+Screens:
+Defines a screen to show.  You provide the name of the screen bean, and a name that will be looked up in Messages.properties.
+
+Accessible method/value:
+Use accessible-value or accessible-method to define a value or method that is interpreted to determine if the screen or category should be shown.
+A category should only be shown if it has at least one visible screen in the hierarchy under it.
+You can also pass parameters to your accessible-method:
+
+  <category message="category.myCategory">
+  	<accessible value="true"/>
+
+    <category message="category.mySubCategory">
+  	  <accessible-method bean="myDomainBean" method="canView">
+  	  </accessible-method>
+  	  <screen message="screen.myFirstScreen" bean="myFirstScreenBean">
+  	    <accessible-method bean="myDomainBean" method="canViewMyScreen">
+	  	  <parameter value="1"/>
+	  	</accessible-method>
+  	  </screen>
+  	  <screen message="screen.mySecondScreen" bean="mySecondScreenBean">
+  	    <accessible-method bean="myDomainBean" method="canViewMyScreen">
+	  	  <parameter value="2"/>
+	  	</accessible-method>
+  	  </screen>
+  	</category>
+
+In this case, category.myCategory will only display if myDomainBean.canView() returns true, AND either canViewMyScreen(1) or canViewMyScreen(2) returns true.
+
+
+HIBERNATE CONFIGURATION:
+Hibernate configuration has now been modularized.  You can define hibernate mappings to use in each module, and then assemble them all together by including the spring context files from the various modules.
+There are 3 main classes responsible for this:
+
+HibernateConfiguration:
+This defines a list of hibernate mappings to use, and which transaction manager to use for transaction support.
+You can also define which mappings should use the transaction manager, and which should be left out.
+There will be zero or more HibernateConfigurations per HSE module.
+See standardsecurity's org.stenerud.standardsecurity.springContext.xml to see how it's defined.
+
+HibernateConfigurationInterest:
+Provides a regex-based selector to select a list of HibernateConfiguration files to load from the spring context.
+It also defines the session factory and disconnect handler to use with the mappings specified in the configurations.
+You generally only need one of these defined, but might want more if you have more than one database.
+See the example app's org.stenerud.example.springContext.xml to see how it's used.
+
+HibernateConfigurer:
+This is a BeanFactoryPostProcessor that looks for all instances of HibernateConfigurationInterest, and builds a complete Hibernate configuration from them.
+HibernateConfigurer is defined in hse-base context org.stenerud.hse.baseContext.xml, which must be included either by using the include directive, or from your web.xml.  See the example app's web.xml to see how it's done.
+
+
+SERVER PUSH:
+I've done some optimizations in the server push mechanism and fixed a potential deadlock situation.
+Note: In the current Echo2 library, the refresh interval cannot be set higher than it already is.
+This means that if you set refresh to 5 seconds and then later set it to 10 seconds, it will still refresh every 5 seconds.
+
+
+PROPERTY HELPER:
+PropertyHelper now allows dynamic reloading of a property file if it changes.  Look in the various spring context files for examples.
+
+
+FULLSCREEN REQUESTORS:
+There is a new class of requestors that take over the entire screen.
+Please consider these ALPHA quality.  I'm not happy with the way they are implemented at present, and will be changing public interfaces related to them.
+
+
+THEMES:
+I've pulled the redmondX theme out into its own module.  You can replace it with your own if you like.
+
+
+EXAMPLE APP:
+The example app shows a basic CRUD system for managing the users, groups, and permissions from the standardsecurity module.
+
+
+MINIMAL APP:
+There is a minimal application module that defines absolutely nothing and uses no modules besides hase-base and themes.
+Run it and you'll get a main screen, nothing more.
+
+
+GENERAL CHANGES:
+- Added readme files in each of the subprojects.  They explain any special requirements of the particular module.
+- Cleaned up a lot of the helper classes to make them more orthogonal.
+
+
+FOR THE FUTURE:
+- Considering moving validation to a separate module.  Thoughts?
+- Documentation!  Yes, the docs are still hopelessly out of date, I know.
+- Maven.  If someone can help out with this, please drop me a line!  I got some examples from some people but at the rate I'm making progress, I doubt I'll ever get it done.
+- Subversion.  I'll be setting up a subversion repository on sourceforge once I'm sure the project hierarchy is correct.  I'm worried that if I do it before switching to maven, I'll have to shuffle everything around.
+- More modules for things like workflow, messaging, etc.
+- Make it easier to use out-of-the-box.  Things are starting to get complicated.
+- Find the time to do all this.  Umm... HELP!
+
+
+
+HSE 2.0b1 (2006-jul-17):
+------------------------
+- HSE is now an application framework!  The distribution is now split into modules that can be plugged into the base framework.  See the example and minimal apps.
+- Improved the database disconnect detection.  Detection is now done within the DAO rather than at the UI level.  Currently supports Derby and Postgresql.
+- Fixed bug where messages were not localized properly.
+- Missing messages no longer cause a crash; It will instead display an error in place of the message.
+- The old HSE base app has been adapted to use the framework and is now the example app.
+- A new minimal app, that has no security system or pre-existing database tables.  Pretty boring app, but a good starting point if you want a different security system or no security at all.
+
+NOTE: HSE 1.x cannot be automatically upgraded to HSE 2.x.  Although it is very similar, you'll have to adapt your application to the new framework layout.
+
+
 HSE 1.1 (2006-Jul-08):
 ----------------------
 - Added database connection loss detection and handling (see ExceptionAnalyzer and handleException() in the Screen implementations).

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE screens SYSTEM "screens.dtd">
+<screens>
+  <initial-screen bean="mainScreen"/>
+  <main-screen bean="mainScreen"/>
+</screens>

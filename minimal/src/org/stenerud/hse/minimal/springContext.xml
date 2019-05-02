@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<!-- ============================================= -->
+	<!-- ================== Database ================= -->
+	<!-- ============================================= -->
+
+	<!-- Data Source -->
+
+	<!-- Select one of the following data sources -->
+
+	<!-- Use this for a JNDI data source. You must also uncomment in context.xml and web.xml.
+    <bean id="minimalDataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName"><value>java:comp/env/jdbc/minimalDB</value></property>
+    </bean>
+    -->
+
+	<!-- Use this for an application-supplied dbcp pooled data source
+    <bean id="minimalDataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName"><value>${minimal.database.driverClassName}</value></property>
+        <property name="url"><value>${minimal.database.url}</value></property>
+        <property name="username"><value>${minimal.database.username}</value></property>
+        <property name="password"><value>${minimal.database.password}</value></property>
+	</bean>
+	-->
+
+	<!-- Use this for an application-supplied c3p0 pooled data source -->
+	<bean id="minimalDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${minimal.database.driverClassName}" />
+		<property name="jdbcUrl" value="${minimal.database.url}" />
+		<property name="user" value="${minimal.database.username}" />
+		<property name="password" value="${minimal.database.password}" />
+		<property name="preferredTestQuery" value="${minimal.database.testQuery}" />
+		<property name="acquireRetryAttempts" value="5" />
+		<property name="acquireRetryDelay" value="1000" />
+		<property name="checkoutTimeout" value="10000" />
+		<property name="maxPoolSize" value="30" />
+		<property name="idleConnectionTestPeriod" value="60" />
+		<property name="testConnectionOnCheckin" value="true" />
+		<property name="testConnectionOnCheckout" value="false" />
+	</bean>
+
+	<!-- Hibernate -->
+	<bean id="minimalSessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource"><ref bean="minimalDataSource"/></property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${minimal.hibernate.dialect}</prop>
+				<prop key="hibernate.query.substitutions">${minimal.database.substitutions}</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">false</prop>
+			</props>
+		</property>
+		<property name="mappingResources">
+			<list>
+			  <!-- Insert mappings here -->
+		   	</list>
+		</property>
+	</bean>
+
+<!--	<bean id="minimalDisconnectHandler" class="org.stenerud.hse.base.data.DerbyDisconnectHandler"/> -->
+	<bean id="minimalDisconnectHandler" class="org.stenerud.hse.base.data.PostgresqlDisconnectHandler"/>
+
+	<bean id="minimalMessageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename">
+			<value>Messages</value> <!-- Messages.properties at the top of the classpath -->
+		</property>
+	</bean>	
+
+
+	<bean id="minimalUserInterface" class="org.stenerud.hse.minimal.ui.echo2.MinimalUserInterface" singleton="false">
+		<property name="messages"><ref bean="messages"/></property>
+		<property name="properties"><ref bean="applicationProperties"/></property>
+		<property name="screenManager"><ref bean="screenManager"/></property>
+	</bean>
+</beans>

@@ -1,0 +1,102 @@
+HSE 2.0 beta2
+
+
+BETA VERSION
+
+This is a beta release, which means that there are bugs, and the API will most likely change a bit before the final release.
+The documentation is very messy at present.
+
+
+
+QUICK TIPS
+
+
+The distribution is currently split into four subprojects: base, standardsecurity, minimal, and example.
+
+Base is the HSE base framework, required for any HSE application.
+StandardSecurity is an add-on module which provides a security system similar to the one built into HSE-1.1.
+Minimal is an application that does the absolute minimum to get something displayed on the browser.
+Example is an application that uses StandardSecurity, and defines the user and group editor screens.  The default admin login is admin/adminchangeme
+
+Where the example application and the documentation differ, I am leaning towards what has been done in the example app, and will be (hopefully) updating the documentation in the near future.
+
+
+
+SPRING CONTEXT
+
+The spring context information is split among multiple files to allow for modular functionality.
+The base context file is in the classpath at /org/stenerud/hse/base/baseContext.xml.
+The basic idea has been to call any other context files springContext.xml and place them at a unique location in the classpath.
+You could then add an entry in your web.xml like so:
+
+	<context-param>
+	    <param-name>contextConfigLocation</param-name>
+    	<param-value>
+    	  classpath*:/org/stenerud/hse/base/baseContext.xml
+    	  classpath*:**/springContext.xml
+    	</param-value>
+	</context-param>
+
+Unfortunately, class loaders are not all equal, and some will not find a file when using wildcards for the class path.
+Until I can think of a more elegant solution, you should define every context file manually:
+
+    	  classpath*:/org/stenerud/hse/base/baseContext.xml
+    	  classpath*:/org/stenerud/hse/standardsecurity/springContext.xml
+    	  classpath*:/org/stenerud/hse/example/springContext.xml
+
+
+
+DEFINING SCREENS
+
+Screen definition is now done via the screens.xml file.  Have a look at webapp/WEB-INF/screens.xml in the example application.
+Categories can be thought of as branches and screens as leaves in a tree structure.  I convert this structure to a menu system in the example app, trimming any categories that end up with no visible screens.
+
+Although it hasn't really been updated for HSE 2.0, the doc directory contains helpful information for developing applications with HSE.
+
+
+
+DEFINING PERMISSIONS
+
+The permissions in standardsecurity that may be edited are defined in webapp/WEB-INF/permissions.properties.  They can be of type readWrite or access.
+This is currently a bit of a mess and will be changed to an xml solution in the future.
+This file only defines what permissions are editable in the group editor, and what kind of permission they should appear as (read/write or access/deny).  The permissions themselves must still be defined and stored in the database in a fashion similar to org.stenerud.hse.standardsecurity.service.security.Permissions.
+
+Once again, this is a real mess and will be changed considerably to make it easier to use.
+
+
+
+INTERNATIONALIZATION
+
+All messages are stored in webapp/WEB-INF/classes/Messages.properties.
+You can make your own locale-specific properties files and place them in the same directory.
+
+
+
+SQL SCHEMA GENERATION
+
+If you're planning to use the createschema ant task to generate an SQL file for your project, be sure to add any jars containing .hbm.xml files to the file list in the unjar task of "createschema" (see build.xml in the example project).
+Hibernate will attempt to create the database automatically for you when you first start the application, but it will only work if the database user has create table privileges.
+
+
+
+UPCOMING CHANGES
+
+- I'll soon be replacing instances of epng's TabbedPane with echo2extras TabPane.
+- The permissions property file will be replaced with an xml implementation.
+- I'm considering changing how the various Spring context files are added and referenced.
+
+
+
+REPORTING BUGS & ASKING FOR HELP
+
+Post reports and requests to the Echo2 message board at http://forum.nextapp.com/forum/index.php
+Use the "Development (Echo2)" forum for bug reports.
+Ask for help in the "Help & Support (Echo2)" forum.
+Be sure to point out that it is for HSE in the message.
+
+
+
+HELPING OUT
+
+I'll always welcome some help =)
+Send email to kstenerud@gmail.com or pm me (kstenerud) on the Echo2 message board.

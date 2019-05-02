@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+
+<project default="make"                    name="hse-example">
+  <!-- Project Values -->
+  <property name="project.package"         value="org.stenerud.hse.example"/>
+  <property name="project.version"         value="2.0b2"/>
+  <property name="project.year"            value="2006"/>
+
+  <!-- Override file -->
+  <property file="build.properties"/>
+
+  <!-- Javac Properties -->
+  <property name="javac.debug"             value="true"/>
+  <property name="javac.optimize"          value="false"/>
+
+  <!-- Directories -->
+  <property name="dir.buildlib"            location="../buildlib"/>
+  <property name="dir.baselib"             location="../lib"/>
+  <property name="dir.lib"                 location="lib"/>
+  <property name="dir.dist"                location="../dist"/>
+  <property name="dir.javadoc"             location="../dist/doc/api/example"/>
+  <property name="dir.webapp"              location="webapp"/>
+  <property name="dir.webapp.lib"          location="${dir.webapp}/WEB-INF/lib"/>
+
+  <!-- source files used in building the project -->
+  <property name="dir.src"                 location="src"/>
+
+  <!-- temporary work directory used when building the project -->
+  <property name="dir.work"                location="work"/>
+  <property name="dir.work.schema"         location="work/schema"/>
+  <property name="dir.work.class"          location="work/class"/>
+
+  <property name="project.jar"             value="${dir.webapp}/WEB-INF/lib/${ant.project.name}-${project.version}.jar"/>
+  <property name="project.sql"             value="${dir.dist}/${ant.project.name}.sql"/>
+  <property name="project.war"             value="${dir.dist}/${ant.project.name}.war"/>
+
+  <!-- A location where jars containing hibernate schema files can be found. -->
+  <fileset id="hibernate-schema-jars" dir="${dir.dist}">
+    <include name="hse-standardsecurity*.jar"/>
+  </fileset>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Classpaths                                                          -->
+  <!-- =================================================================== -->
+  <path id="classpath.default">
+    <fileset dir="${dir.buildlib}" >
+      <include name="**/*.jar"/>
+    </fileset>
+    <fileset dir="${dir.baselib}" >
+      <include name="**/*.jar"/>
+    </fileset>
+    <fileset dir="${dir.lib}" >
+      <include name="**/*.jar"/>
+    </fileset>
+    <fileset dir="${dir.dist}" >
+      <include name="hse-base*.jar"/>
+      <include name="hse-standardsecurity*.jar"/>
+      <include name="hse-themes*.jar"/>
+    </fileset>
+    <pathelement path="${dir.src}"/>
+  </path>
+
+  <path id="classpath.hibernate">
+    <path refid="classpath.default"/>
+    <pathelement location="${dir.work.class}"/>
+    <pathelement location="webapp/WEB-INF/classes"/>
+  </path>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Build                                                               -->
+  <!-- =================================================================== -->
+  <target name="make" depends="war" description="Build the project (default)"/>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Rebuild                                                             -->
+  <!-- =================================================================== -->
+  <target name="rebuild" depends="clean,make" description="Clean, then rebuild the project"/>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Clean everything                                                    -->
+  <!-- =================================================================== -->
+  <target name="clean" description="Clean out all compiled/generated files">
+    <delete dir="${dir.work}"/>
+    <delete dir="${dir.javadoc}"/>
+    <delete dir="${dir.webapp.lib}"/>
+    <delete file="${project.sql}"/>
+    <delete file="${project.war}"/>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Compile java                                                        -->
+  <!-- =================================================================== -->
+  <target name="compile" description="Compile java">
+  	<mkdir dir="${dir.work.class}"/>
+    <javac
+     destdir="${dir.work.class}"
+     classpathref="classpath.default"
+     verbose="false"
+     debug="${javac.debug}"
+     optimize="${javac.optimize}">
+      <src>
+        <pathelement location="${dir.src}"/>
+      </src>
+    </javac>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Create jar                                                          -->
+  <!-- =================================================================== -->
+  <target name="jarfile" depends="compile" description="Create jarfile">
+  	<mkdir dir="${dir.webapp.lib}"/>
+    <jar jarfile="${project.jar}">
+      <fileset dir="${dir.work.class}" excludes="**/*.java"/>
+      <fileset dir="${dir.src}" excludes="**/*.java"/>
+    </jar>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Copy Libaries                                                       -->
+  <!-- =================================================================== -->
+  <target name="copy" description="Copy libraries, etc">
+  	<mkdir dir="${dir.webapp.lib}"/>
+    <copy todir="${dir.webapp.lib}">
+      <fileset dir="${dir.buildlib}" >
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${dir.baselib}" >
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${dir.lib}" >
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${dir.dist}" >
+        <include name="hse-base*.jar"/>
+        <include name="hse-standardsecurity*.jar"/>
+        <include name="hse-themes*.jar"/>
+      </fileset>
+    </copy>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Generate Javadoc                                                    -->
+  <!-- =================================================================== -->
+  <target name="javadoc" description="Generate Javadoc">
+  	<mkdir dir="${dir.javadoc}"/>
+    <javadoc
+      sourcepath="${dir.src}"
+      destdir="${dir.javadoc}"
+      packagenames="${project.package}.*"
+      classpathref="classpath.default"
+      defaultexcludes="true"
+    />
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Create the database schema                                          -->
+  <!-- =================================================================== -->
+  <target name="createschema" depends="compile"
+    description="Generate DDL from hibernate mapping files">
+  	<mkdir dir="${dir.dist}"/>
+  	<mkdir dir="${dir.work.schema}"/>
+    <unjar dest="${dir.work.schema}">
+      <fileset refid="hibernate-schema-jars"/>
+    </unjar>
+    <taskdef name="exportschema"
+      classname="org.hibernate.tool.hbm2ddl.SchemaExportTask"
+      classpathref="classpath.hibernate"/>
+    <exportschema
+      quiet="yes"
+      text="yes"
+      delimiter=";"
+      output="${project.sql}">
+      <fileset dir="${dir.work.schema}">
+        <include name="**/*.hbm.xml"/>
+      </fileset>
+      <fileset dir="${dir.work.class}">
+        <include name="**/*.hbm.xml"/>
+      </fileset>
+    </exportschema>
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Create warfile                                                      -->
+  <!-- =================================================================== -->
+  <target name="war" depends="compile,jarfile,copy" description="Create warfile">
+  	<mkdir dir="${dir.dist}"/>
+    <jar jarfile="${project.war}">
+      <fileset dir="${dir.webapp}"/>
+    <manifest>
+      <attribute name="Implementation-Title" value="Echo2, Hibernate, Struts Example Application"/>
+      <attribute name="Implementation-Version" value="${project.version}"/>
+    </manifest>
+    </jar>
+  </target>
+
+</project>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE screens SYSTEM "screens.dtd">
+<screens>
+  <initial-screen bean="loginScreen"/>
+  <main-screen bean="mainScreen"/>
+
+  <category message="category.administration">
+  	<accessible value="true"/>
+  	<screen message="screen.userEditor" bean="userEditorScreen">
+  	  <accessible-method bean="userBusiness" method="canView"/>
+  	</screen>
+  	<screen message="screen.groupEditor" bean="groupEditorScreen">
+  	  <accessible-method bean="groupBusiness" method="canView"/>
+  	</screen>
+  </category>
+</screens>
