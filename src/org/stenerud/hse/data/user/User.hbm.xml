@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="org.stenerud.hse.data.user.User" table="HSEUser">
+		<id column="userId" name="id" type="int" unsaved-value="-1">
+			<generator class="native"/>
+		</id>
+		<property column="name" length="20" name="name" not-null="true" type="string" unique="true"/>
+		<property column="password" length="20" name="password" not-null="true" type="string" unique="true"/>
+		<property column="administrator" name="administrator" not-null="true" type="boolean"/>
+		<many-to-one class="org.stenerud.hse.data.group.Group" column="groupId" lazy="false" name="userGroup" not-null="true"/>
+	</class>
+</hibernate-mapping>

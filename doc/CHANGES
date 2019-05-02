@@ -1,0 +1,24 @@
+HSE 1.1 (2006-Jul-08):
+----------------------
+- Added database connection loss detection and handling (see ExceptionAnalyzer and handleException() in the Screen implementations).
+- Switched pooling library from dbcp to c3p0 (it should have been c3p0 in the first place).
+- Cleaned up the transaction proxy cases.  Only create, update, and delete are set to read/write.
+- Moved application.properties out of the classpath so that it can be dynamically reloaded.
+- Added dynamic reloading support to PropertyHelper.
+- Changed endSession.redirect so that it doesn't point to an absolute path.
+- CriteriaBuffer now uses "true" and "false" rather than 1 and 0 for boolean values.
+  If you database doesn't support this, you can set up substitutions in application.properties.
+  See the Derby database values for an example.
+
+
+To update your existing application to HSE 1.1:
+
+1. Patch from the project top level directory with level 1. Example:
+    patch -p1 < doc/changes.diff
+
+2. Remove libraries:
+    webapp/WEB-INF/lib/commons-dbcp.jar
+    webapp/WEB-INF/lib/commons-pool.jar
+
+3. Add libraries:
+    webapp/WEB-INF/lib/c3p0-0.9.0.4.jar

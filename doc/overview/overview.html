@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=shift_jis">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20060703;16362471">
+	<META NAME="CHANGED" CONTENT="20060703;16365256">
+	<STYLE>
+	<!--
+		H2 { margin-top: 0.32in; margin-bottom: 0.08in }
+		H2.western { font-family: "Albany", sans-serif; font-size: 13pt; font-style: normal }
+		H2.cjk { font-family: "HG Mincho Light J"; font-size: 14pt; font-style: italic }
+		H2.ctl { font-family: "Arial Unicode MS"; font-size: 14pt; font-style: italic }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=5><B>Hibernate,
+Spring, Echo2 Base Application</B></FONT></P>
+<H1>Introduction</H1>
+<P STYLE="margin-bottom: 0in">This project is designed as a base
+application and guide for building AJAX applications using Hibernate,
+Spring, and Echo2.</P>
+<P STYLE="margin-bottom: 0in">It is intentionally left sparse (It
+contains only a group and user editor) so that it can be used as a
+base for a full blown application.</P>
+<H1>Features</H1>
+<H2 CLASS="western">Hibernate, Spring, Echo2 integration:</H2>
+<P STYLE="margin-bottom: 0in">All three technologies are matched
+cohesively together to provide a robust base for your AJAX
+applications.</P>
+<P STYLE="margin-bottom: 0in"><IMG SRC="overview_html_m70c2ddbb.gif" ALIGN=LEFT><BR CLEAR=LEFT><BR>
+</P>
+<H2 CLASS="western">3-Tier Architecture:</H2>
+<P STYLE="margin-bottom: 0in">Follows the established pattern of
+separating the application into data, business, and user-interface
+tiers.</P>
+<P STYLE="margin-bottom: 0in"><IMG SRC="overview_html_79170510.gif" ALIGN=LEFT><BR CLEAR=LEFT><BR>
+</P>
+<H2 CLASS="western">Security:</H2>
+<P STYLE="margin-bottom: 0in">Allows username/password logon, logoff,
+and permission checking.</P>
+<P STYLE="margin-bottom: 0in">Permissions can be queried using
+hasPermission(), or enforced using requirePermission().</P>
+<P STYLE="margin-bottom: 0in">Enforcement is done in the business
+tier.</P>
+<H2 CLASS="western">Group-based Permission System:</H2>
+<P STYLE="margin-bottom: 0in">Permissions are group based, which
+means that users gain permissions based on their group membership (A
+user can be a member of only one group).</P>
+<P STYLE="margin-bottom: 0in">Groups can have multiple permissions,
+and associate levels for each permission.</P>
+<P STYLE="margin-bottom: 0in">The base application uses two methods
+for interpreting permission levels.</P>
+<P STYLE="margin-bottom: 0in">Access based: 0 = DENY, 1 = ALLOW</P>
+<P STYLE="margin-bottom: 0in">Read/Write based: 0 = NONE, 1 = READ, 2
+= WRITE</P>
+<P STYLE="margin-bottom: 0in"><IMG SRC="overview_html_71865bf8.png" NAME="graphics1" ALIGN=LEFT BORDER=0><BR CLEAR=LEFT><BR>
+</P>
+<H2 CLASS="western">Input Validation:</H2>
+<P STYLE="margin-bottom: 0in">A simple and flexible validation system
+that can handle most common input field validations.</P>
+<P STYLE="margin-bottom: 0in">The custom screen and requestor
+components can display validation error alerts, and can automatically
+set focus to the offending input field.</P>
+<P STYLE="margin-bottom: 0in"><IMG SRC="overview_html_37190a46.png" NAME="graphics2" ALIGN=LEFT BORDER=0><BR CLEAR=LEFT><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<H2 CLASS="western" STYLE="page-break-before: always">User Editor:</H2>
+<P STYLE="margin-bottom: 0in">Example on-screen CRUD editor allowing
+modification of user properties, as well as group membership.</P>
+<P STYLE="margin-bottom: 0in"><IMG SRC="overview_html_m3c613ba1.png" NAME="graphics3" ALIGN=LEFT BORDER=0><BR CLEAR=LEFT><BR>
+</P>
+<H2 CLASS="western">Group Editor:</H2>
+<P STYLE="margin-bottom: 0in">Example on-screen CRUD editor allowing
+modification of group properties, as well as assigning permission
+levels.</P>
+<P STYLE="margin-bottom: 0in"><IMG SRC="overview_html_m33d0a304.png" NAME="graphics4" ALIGN=LEFT BORDER=0><BR CLEAR=LEFT><BR>
+</P>
+<H1></H1>
+<H1 STYLE="page-break-before: always">Running HSE</H1>
+<H2 CLASS="western">Requirements:</H2>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Java 1.4</P>
+	<LI><P STYLE="margin-bottom: 0in">A servlet container such as <A HREF="http://tomcat.apache.org/">Tomcat</A></P>
+</UL>
+<H2 CLASS="western">Download:</H2>
+<P STYLE="margin-bottom: 0in">HSE can be downloaded from
+<A HREF="http://sourceforge.net/projects/hse">http://sourceforge.net/projects/hse</A></P>
+<P STYLE="margin-bottom: 0in">NOTE: hse.war is a build of the application for those who want to play with it first.  The default username/password is admin/adminchangeme</P>
+
+</BODY>
+</HTML>

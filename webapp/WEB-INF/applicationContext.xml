@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<!-- ============================================= -->
+	<!-- ================== Database ================= -->
+	<!-- ============================================= -->
+
+	<!-- Data Source -->
+
+	<!-- Select one of the following data sources -->
+
+	<!-- Use this for a JNDI data source. You must also uncomment in context.xml and web.xml.
+    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName"><value>java:comp/env/jdbc/mainDB</value></property>
+    </bean>
+    -->
+
+	<!-- Use this for an application-supplied dbcp pooled data source
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName"><value>${database.driverClassName}</value></property>
+        <property name="url"><value>${database.url}</value></property>
+        <property name="username"><value>${database.username}</value></property>
+        <property name="password"><value>${database.password}</value></property>
+	</bean>
+	-->
+
+	<!-- Use this for an application-supplied c3p0 pooled data source -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${database.driverClassName}" />
+		<property name="jdbcUrl" value="${database.url}" />
+		<property name="user" value="${database.username}" />
+		<property name="password" value="${database.password}" />
+		<property name="preferredTestQuery" value="${database.testQuery}" />
+		<property name="acquireRetryAttempts" value="5" />
+		<property name="acquireRetryDelay" value="1000" />
+		<property name="checkoutTimeout" value="10000" />
+		<property name="maxPoolSize" value="30" />
+		<property name="idleConnectionTestPeriod" value="60" />
+		<property name="testConnectionOnCheckin" value="true" />
+		<property name="testConnectionOnCheckout" value="false" />
+	</bean>
+
+	<!-- Hibernate -->
+	<bean id="hibernateProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="properties">
+			<props>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+				<prop key="hibernate.query.substitutions">${database.substitutions}</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">false</prop>
+			</props>
+		</property>
+	</bean>
+
+
+
+	<!-- ================================================ -->
+	<!-- ================== Data Access ================= -->
+	<!-- ================================================ -->
+
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<property name="dataSource"><ref bean="dataSource"/></property>
+		<property name="hibernateProperties">
+			<ref bean="hibernateProperties" />
+		</property>
+		<property name="mappingResources">
+			<list>
+		        <value>org/stenerud/hse/data/group/Group.hbm.xml</value>
+		        <value>org/stenerud/hse/data/security/Permission.hbm.xml</value>
+		        <value>org/stenerud/hse/data/security/PermissionLevel.hbm.xml</value>
+		        <value>org/stenerud/hse/data/user/User.hbm.xml</value>
+		   	</list>
+		</property>
+	</bean>
+
+	<!-- Transaction Manager -->
+	<!-- Adds automatic transaction support through Hibernate -->
+    <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+       <property name="sessionFactory"><ref bean="sessionFactory"/></property>
+    </bean>
+
+
+	<!-- Data Access -->
+
+	<!-- Hibernate DAO template that uses Spring's AOP to wrapp all DAO methods in a transaction. -->
+    <bean id="txProxyTemplate" abstract="true"
+        class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+      <property name="transactionManager"><ref local="transactionManager"/></property>
+      <property name="transactionAttributes">
+        <props>
+          <prop key="create*">PROPAGATION_REQUIRED</prop>
+          <prop key="update*">PROPAGATION_REQUIRED</prop>
+          <prop key="delete*">PROPAGATION_REQUIRED</prop>
+          <prop key="getOrCreate*">PROPAGATION_REQUIRED</prop>
+          <prop key="*">PROPAGATION_REQUIRED,readOnly</prop>
+        </props>
+      </property>
+    </bean>
+
+
+	<bean id="groupDAO" parent="txProxyTemplate">
+		<property name="target">
+			<bean class="org.stenerud.hse.data.group.GroupDAODatabase">
+				<property name="sessionFactory"><ref local="sessionFactory"/></property>
+				<property name="securityDAO"><ref bean="securityDAO"/></property>
+				<property name="permissions"><ref bean="permissions"/></property>
+			</bean>
+		</property>
+    </bean>
+
+	<bean id="securityDAO" parent="txProxyTemplate">
+		<property name="target">
+			<bean class="org.stenerud.hse.data.security.SecurityDAODatabase">
+				<property name="sessionFactory"><ref local="sessionFactory"/></property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="userDAO" parent="txProxyTemplate">
+		<property name="target">
+			<bean class="org.stenerud.hse.data.user.UserDAODatabase">
+				<property name="sessionFactory"><ref local="sessionFactory"/></property>
+				<property name="groupDAO"><ref bean="groupDAO"/></property>
+			</bean>
+		</property>
+	</bean>
+
+
+
+	<!-- ==================================================== -->
+	<!-- ================== Business Logic ================== -->
+	<!-- ==================================================== -->
+
+	<bean id="groupBusiness" class="org.stenerud.hse.business.group.GroupBusiness">
+		<property name="groupDAO"><ref bean="groupDAO"/></property>
+		<property name="permissions"><ref bean="permissions"/></property>
+		<property name="properties"><ref bean="applicationProperties"/></property>
+		<property name="security"><ref bean="security"/></property>
+		<property name="securityDAO"><ref bean="securityDAO"/></property>
+	</bean>
+
+	<bean id="userBusiness" class="org.stenerud.hse.business.user.UserBusiness">
+		<property name="currentUser"><ref bean="currentUser"/></property>
+		<property name="groupDAO"><ref bean="groupDAO"/></property>
+		<property name="permissions"><ref bean="permissions"/></property>
+		<property name="properties"><ref bean="applicationProperties"/></property>
+		<property name="security"><ref bean="security"/></property>
+		<property name="userDAO"><ref bean="userDAO"/></property>
+	</bean>
+
+
+
+	<!-- ============================================== -->
+	<!-- ================== Security ================== -->
+	<!-- ============================================== -->
+
+	<bean id="security" class="org.stenerud.hse.security.SecurityImpl">
+		<property name="userDAO"><ref bean="userDAO"/></property>
+		<property name="groupDAO"><ref bean="groupDAO"/></property>
+		<property name="currentUser"><ref bean="currentUser"/></property>
+		<property name="securityDAO"><ref bean="securityDAO"/></property>
+	</bean>
+
+	<bean id="permissions" class="org.stenerud.hse.security.Permissions">
+		<constructor-arg><ref bean="securityDAO"/></constructor-arg>
+	</bean>
+
+
+
+	<!-- ============================================== -->
+	<!-- ================== Services ================== -->
+	<!-- ============================================== -->
+
+	<!-- Properties -->
+
+	<!-- The resource containing application.properties. -->
+	<bean id="applicationPropertiesResource" class="org.springframework.web.context.support.ServletContextResource">
+		<constructor-arg index="0">
+        	<bean class="org.springframework.web.context.support.ServletContextFactoryBean"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <value>/WEB-INF/application.properties</value>
+        </constructor-arg> 
+	</bean>
+
+    <!-- application.properties as a PropertyHelper. -->
+	<bean id="applicationProperties" class="org.stenerud.hse.tools.PropertyHelper">
+		<property name="resource"><ref bean="applicationPropertiesResource"/></property>
+		<property name="checkInterval" value="10000"/> <!-- 10 seconds -->
+	</bean>
+
+
+	<!-- Misc -->
+	<bean id="currentUser" class="org.stenerud.hse.ui.servlet.CurrentUserSessionLocal">
+	</bean>
+
+	<bean id="applicationInitializer" class="org.stenerud.hse.ApplicationInitializer">
+		<property name="groupDAO"><ref bean="groupDAO"/></property>
+		<property name="properties"><ref bean="applicationProperties"/></property>
+		<property name="securityDAO"><ref bean="securityDAO"/></property>
+		<property name="userDAO"><ref bean="userDAO"/></property>
+	</bean>
+
+
+	<!-- Post-processor that fills in all placeholder values with properties from applicationProperties -->
+	<bean class='org.springframework.beans.factory.config.PropertyPlaceholderConfigurer'>
+		<property name="location"><ref bean="applicationPropertiesResource"/></property>
+	</bean>
+
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename">
+			<value>Messages</value> <!-- Messages.properties at the top of the classpath -->
+		</property>
+	</bean>	
+
+	<bean id="messages" class="org.stenerud.hse.ui.SpringMessages">
+		<property name="messageSource"><ref local="messageSource"/></property>
+	</bean>
+
+
+
+	<!-- ===================================================== -->
+	<!-- ================== Web Application ================== -->
+	<!-- ===================================================== -->
+
+	<bean id="webApplication" class="org.stenerud.hse.ui.servlet.Echo2Application" singleton="false">
+		<property name="userInterface"><ref local="userInterface"/></property>
+		<property name="security"><ref bean="security"/></property>
+	</bean>
+
+	<bean id="screenFactory" class="org.stenerud.hse.ui.echo2.screen.ScreenFactorySpring">
+	</bean>
+
+	<bean id="userInterface" class="org.stenerud.hse.ui.echo2.Echo2UserInterface" singleton="false">
+		<property name="currentUser"><ref bean="currentUser"/></property>
+		<property name="groupBusiness"><ref bean="groupBusiness"/></property>
+		<property name="messages"><ref local="messages"/></property>
+		<property name="properties"><ref bean="applicationProperties"/></property>
+		<property name="screenFactory"><ref bean="screenFactory"/></property>
+		<property name="security"><ref bean="security"/></property>
+		<property name="userBusiness"><ref bean="userBusiness"/></property>
+	</bean>
+
+
+
+	<!-- ============================================= -->
+	<!-- ================== Screens ================== -->
+	<!-- ============================================= -->
+
+	<!-- Group Editor Screen -->
+	<bean id="groupEditorScreen" class="org.stenerud.hse.ui.echo2.screen.groups.GroupScreen" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+		<property name="groupBusiness"><ref bean="groupBusiness"/></property>
+		<property name="newRequestor"><ref local="groupEditRequestor"/></property>
+		<property name="editRequestor"><ref local="groupEditRequestor"/></property>
+		<property name="table"><ref local="groupTable"/></property>
+		<property name="securityDAO"><ref bean="securityDAO"/></property>
+	</bean>
+
+	<bean id="groupEditRequestor" class="org.stenerud.hse.ui.echo2.screen.groups.GroupEditRequestor" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+		<property name="groupBusiness"><ref bean="groupBusiness"/></property>
+		<property name="permissions"><ref bean="permissions"/></property>
+		<property name="permissionTable"><ref local="groupPermissionTable"/></property>
+	</bean>
+
+	<bean id="groupPermissionTable" class="org.stenerud.hse.ui.echo2.screen.groups.PermissionTable" singleton="false" init-method="init">
+		<property name="messages"><ref local="messages"/></property>
+	</bean>
+
+	<bean id="groupColumnInformation" class="org.stenerud.hse.ui.echo2.screen.groups.GroupColumnInformation">
+	</bean>
+
+	<bean id="groupTable" class="org.stenerud.hse.ui.echo2.screen.groups.GroupTable" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+		<property name="model"><ref local="groupTableModel"/></property>
+		<property name="columnInformation"><ref local="groupColumnInformation"/></property>
+	</bean>
+
+	<bean id="groupTableModel" class="org.stenerud.hse.ui.echo2.screen.groups.GroupTableModel" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+		<property name="columnInformation"><ref local="groupColumnInformation"/></property>
+		<property name="groupBusiness"><ref bean="groupBusiness"/></property>
+	</bean>
+
+
+	<!-- Login Screen -->
+	<bean id="loginScreen" class="org.stenerud.hse.ui.echo2.screen.login.LoginScreen" singleton="false">
+		<property name="groupDAO"><ref bean="groupDAO"/></property>
+		<property name="security"><ref bean="security"/></property>
+		<property name="messages"><ref local="messages"/></property>
+	</bean>
+
+
+	<!-- Main Screen -->
+	<bean id="mainScreen" class="org.stenerud.hse.ui.echo2.screen.main.MainScreen" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+	</bean>
+
+
+	<!-- User Editor Screen -->
+	<bean id="userEditorScreen" class="org.stenerud.hse.ui.echo2.screen.users.UserScreen" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+		<property name="currentUser"><ref bean="currentUser"/></property>
+		<property name="userBusiness"><ref bean="userBusiness"/></property>
+		<property name="newRequestor"><ref local="userEditRequestor"/></property>
+		<property name="editRequestor"><ref local="userEditRequestor"/></property>
+		<property name="table"><ref local="userTable"/></property>
+	</bean>
+
+	<bean id="userEditRequestor" class="org.stenerud.hse.ui.echo2.screen.users.UserEditRequestor" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+		<property name="currentUser"><ref bean="currentUser"/></property>
+		<property name="userBusiness"><ref bean="userBusiness"/></property>
+	</bean>
+
+	<bean id="userColumnInformation" class="org.stenerud.hse.ui.echo2.screen.users.UserColumnInformation">
+	</bean>
+
+	<bean id="userTable" class="org.stenerud.hse.ui.echo2.screen.users.UserTable" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+		<property name="model"><ref local="userTableModel"/></property>
+		<property name="columnInformation"><ref local="userColumnInformation"/></property>
+	</bean>
+
+	<bean id="userTableModel" class="org.stenerud.hse.ui.echo2.screen.users.UserTableModel" singleton="false">
+		<property name="messages"><ref local="messages"/></property>
+		<property name="columnInformation"><ref local="userColumnInformation"/></property>
+		<property name="userBusiness"><ref bean="userBusiness"/></property>
+	</bean>
+
+</beans>
